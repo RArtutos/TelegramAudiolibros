@@ -10,6 +10,7 @@ class AudiobookHandler:
         self.config = Config()
         self.config.ensure_temp_dir()
         self._load_audiobooks()
+        self.last_search_results = []  # Store last search results
 
     def _load_audiobooks(self):
         try:
@@ -24,18 +25,27 @@ class AudiobookHandler:
         return random.choice(list(self.audiobooks.values()))
 
     def search_audiobooks(self, query: str) -> List[Dict]:
-        query = query.lower()
+        query = query.lower().strip()
+        if not query or query == '/search':
+            return []
+            
         results = []
-        
         for book in self.audiobooks.values():
             if query in book['title'].lower():
                 results.append(book)
                 
-        return sorted(
+        self.last_search_results = sorted(
             results,
-            key=lambda x: x['title'].lower().find(query),
-            reverse=True
+            key=lambda x: x['title'].lower().find(query)
         )[:10]
+        
+        return self.last_search_results
+
+    def get_book_by_index(self, index: int) -> Dict:
+        """Get book from last search results by index."""
+        if 0 <= index < len(self.last_search_results):
+            return self.last_search_results[index]
+        raise ValueError("Invalid book index")
 
     async def download_audiobook(self, audiobook: Dict) -> str:
         filename = f"{self.config.TEMP_DIR}/{audiobook['idDownload']}.mp3"
