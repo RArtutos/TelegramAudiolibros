@@ -1,0 +1,13 @@
+version: '3.8'
+services:
+  bot:
+    build: .
+    volumes:
+      - ./app:/app
+      - ./data:/data
+      - audiobook_temp:/tmp/audiobooks
+    env_file: .env
+    restart: always
+
+volumes:
+  audiobook_temp:
